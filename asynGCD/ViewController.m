@@ -15,6 +15,17 @@
 
 @implementation ViewController
 
++ (dispatch_queue_t)layoutQueue
+{
+    static dispatch_queue_t layoutQueue = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        layoutQueue = dispatch_queue_create("com.immomo.layout", NULL);
+    });
+    return layoutQueue;
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
