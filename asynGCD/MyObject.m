@@ -14,4 +14,9 @@
     NSLog(@"MyObject dealloc");
 }
 
+- (void)doSomething {
+    NSLog(@"do something");
+}
+
+
 @end

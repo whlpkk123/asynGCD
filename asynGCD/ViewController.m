@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "MyObject.h"
+#import "MyDataManager.h"
 
 @interface ViewController ()
 
@@ -127,5 +128,42 @@
  GCD--obj:(null)
  */
 
+- (IBAction)buttonclicked3:(id)sender {
+    //创建一个新的DataManager，模拟我们日常工作中的数据层
+    MyDataManager *dm = [[MyDataManager alloc] init];
+
+    // 创建一个请求，由于和self、dm等没有引用关系，所以这里不使用__weak修饰，不会有循环引用的问题。
+    MyObject *request = [[MyObject alloc] init];
+    request.completion = ^{
+        //模拟接口请求回来后，刷新数据逻辑
+        [dm refresh];
+    };
+    
+    //模拟异步请求，3s后收到response
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+        // do something parse data，例如JSON解析
+        
+        //模拟异步主线程，回调完成
+        dispatch_async(dispatch_get_main_queue(), ^{
+            request.completion();
+            
+            //模拟结束后,异步线程做一些性能统计等事情。
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                [request doSomething];
+            });
+        });
+    });
+    
+    //模拟页面请求，接口完成前退出页面，需要销毁的情况
+    NSLog(@"finish, dm should dealloc");
+}
+
+/* log
+ finish, dm should dealloc
+ refresh with data
+ do something
+ MyObject dealloc
+ MyDataManager dealloc: <NSThread: 0x600001e57a80>{number = 6, name = (null)}
+ */
 
 @end
